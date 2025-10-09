@@ -1,0 +1,128 @@
+# Prompt Architect - Visionary Multi-LLM Support with Reasoning
+# Author: Balaji Koneti
+# Dependencies for prompt caching, multi-LLM support, reasoning, and dynamic generation
+
+# Core LLM Providers
+openai>=1.0.0                    # OpenAI API client for GPT models including o1/o3
+anthropic>=0.7.0                 # Anthropic Claude API client with extended thinking
+google-generativeai>=0.3.0       # Google Gemini API client with reasoning
+
+# Caching and Storage
+redis>=4.5.0                     # Redis client for prompt/response caching
+pydantic>=2.0.0                  # Data validation and settings management
+
+# Configuration and Environment
+python-dotenv>=1.0.0             # Environment variable management
+pyyaml>=6.0                      # YAML configuration file parsing
+
+# HTTP and Async Support
+httpx>=0.24.0                    # Modern HTTP client for API calls
+asyncio-throttle>=1.0.0          # Rate limiting for API calls
+
+# Logging and Monitoring
+structlog>=23.0.0                # Structured logging
+rich>=13.0.0                     # Rich text and beautiful formatting
+
+# Reasoning and Chain-of-Thought
+tiktoken>=0.5.0                  # Token counting for OpenAI models
+numpy>=1.24.0                    # Numerical operations for reasoning metrics
+scipy>=1.11.0                    # Scientific computing for reasoning analysis
+
+# API and Web Framework
+fastapi>=0.104.0                 # Modern web framework for APIs
+uvicorn[standard]>=0.24.0        # ASGI server for FastAPI
+pydantic>=2.5.0                  # Data validation and settings management
+pydantic-settings>=2.1.0         # Settings management for Pydantic
+email-validator>=2.1.0           # Email validation for Pydantic
+
+# Authentication and Security
+python-jose[cryptography]>=3.3.0 # JWT token handling
+passlib[bcrypt]>=1.7.4           # Password hashing
+python-multipart>=0.0.6          # Form data parsing
+
+# Database
+sqlalchemy>=2.0.0                # SQL toolkit and ORM
+asyncpg>=0.29.0                  # PostgreSQL async driver
+alembic>=1.13.0                  # Database migration tool
+psycopg2-binary>=2.9.0           # PostgreSQL adapter
+
+# Caching
+redis>=5.0.0                     # Redis client
+aioredis>=2.0.0                  # Async Redis client
+
+# Monitoring and Metrics
+prometheus-client>=0.19.0        # Prometheus metrics
+psutil>=5.9.0                    # System and process utilities
+opentelemetry-api>=1.21.0        # OpenTelemetry API
+opentelemetry-sdk>=1.21.0        # OpenTelemetry SDK
+opentelemetry-instrumentation-fastapi>=0.42b0  # FastAPI instrumentation
+
+# Testing
+pytest>=7.4.0                    # Testing framework
+pytest-asyncio>=0.21.0           # Async testing support
+pytest-cov>=4.1.0                # Coverage reporting
+pytest-mock>=3.12.0              # Mocking utilities
+httpx>=0.25.0                    # HTTP client for testing
+
+# Code Quality
+black>=23.0.0                    # Code formatting
+flake8>=6.0.0                    # Linting
+mypy>=1.7.0                      # Type checking
+isort>=5.12.0                    # Import sorting
+
+# Performance Testing
+locust>=2.17.0                   # Load testing framework
+
+# Development Tools
+pre-commit>=3.5.0                # Git hooks
+jupyter>=1.0.0                   # Jupyter notebooks
+ipython>=8.17.0                  # Enhanced Python shell
+
+# Documentation
+mkdocs>=1.5.0                    # Documentation generator
+mkdocs-material>=9.4.0           # Material theme for MkDocs
+mkdocstrings[python]>=0.24.0     # Python docstring support
+
+# Deployment
+gunicorn>=21.2.0                 # WSGI server
+docker>=6.1.0                    # Docker SDK
+kubernetes>=28.1.0               # Kubernetes client
+
+# Additional Utilities
+python-dotenv>=1.0.0             # Environment variable loading
+click>=8.1.0                     # Command line interface
+rich>=13.7.0                     # Rich text and beautiful formatting
+typer>=0.9.0                     # Modern CLI framework
+
+# Testing and Development
+pytest>=7.0.0                    # Testing framework
+pytest-asyncio>=0.21.0          # Async testing support
+pytest-mock>=3.10.0             # Mocking utilities
+black>=23.0.0                    # Code formatting
+flake8>=6.0.0                    # Linting
+
+# Optional: Advanced Features
+pandas>=2.0.0                    # Data analysis for performance metrics
+scikit-learn>=1.3.0              # ML for dynamic template selection
+matplotlib>=3.7.0                # Plotting for reasoning visualization
+seaborn>=0.12.0                  # Statistical data visualization
+
+# API and Web Framework (for future REST API)
+fastapi>=0.104.0                 # FastAPI for REST API server
+uvicorn>=0.24.0                  # ASGI server for FastAPI
+python-multipart>=0.0.6          # Form data parsing for FastAPI
+python-jose>=3.3.0               # JWT token handling
+passlib>=1.7.4                   # Password hashing
+bcrypt>=4.0.1                    # Password hashing backend
+
+# Database Support (for future database integration)
+sqlalchemy>=2.0.0                # SQL toolkit and ORM
+alembic>=1.12.0                  # Database migration tool
+asyncpg>=0.29.0                  # PostgreSQL async driver
+motor>=3.3.0                     # MongoDB async driver
+
+# Monitoring and Observability (for future monitoring)
+prometheus-client>=0.19.0        # Prometheus metrics
+opentelemetry-api>=1.21.0        # OpenTelemetry API
+opentelemetry-sdk>=1.21.0        # OpenTelemetry SDK
+opentelemetry-instrumentation-fastapi>=0.42b0  # FastAPI instrumentation
