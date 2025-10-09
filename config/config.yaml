@@ -1,0 +1,233 @@
+# Prompt Architect Configuration
+# Author: Balaji Koneti
+# Configuration file for the enhanced Prompt Architect with multi-LLM support
+
+# LLM Provider Configuration
+llm_providers:
+  # Default provider to use
+  default_provider: "openai"
+  
+  # Fallback providers in order of preference
+  fallback_providers:
+    - "claude"
+    - "gemini"
+  
+  # Load balancing strategy
+  # Options: round_robin, least_cost, fastest, priority, random
+  load_balancing_strategy: "priority"
+  
+  # Request configuration
+  max_retries: 3
+  retry_delay: 1.0
+  response_timeout: 30.0
+  cost_threshold: 1.0  # Maximum cost per request in USD
+
+# Cache Configuration
+cache:
+  # Enable caching
+  enabled: true
+  
+  # Redis connection
+  redis_url: "redis://localhost:6379"
+  
+  # TTL settings (in seconds)
+  default_ttl: 3600        # 1 hour
+  prompt_ttl: 7200         # 2 hours
+  response_ttl: 1800       # 30 minutes
+  template_ttl: 86400      # 24 hours
+  
+  # Cache limits
+  max_cache_size: 10000
+  enable_compression: true
+  cache_prefix: "prompt_architect"
+
+# Prompt Builder Configuration
+prompt_builder:
+  # Enable dynamic template selection
+  enable_dynamic_selection: true
+  
+  # Default template to use when auto-selection fails
+  default_template: "qa"
+  
+  # Template variables
+  default_variables:
+    domain: "general"
+    audience: "general"
+    format: "text"
+    quality_level: "standard"
+
+# Dynamic Selector Configuration
+dynamic_selector:
+  # Enable LLM-based classification
+  enable_llm_classification: true
+  
+  # Classification model (use faster/cheaper model for analysis)
+  classification_model: "gpt-4o-mini"
+  
+  # Classification temperature
+  classification_temperature: 0.1
+  
+  # Cache classification results
+  cache_classifications: true
+  
+  # Learning from feedback
+  enable_learning: true
+
+# Logging Configuration
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "json"  # json, text
+  file: "logs/prompt_architect.log"
+  max_size: "10MB"
+  backup_count: 5
+
+# Performance Monitoring
+monitoring:
+  # Enable performance metrics
+  enable_metrics: true
+  
+  # Metrics collection interval (seconds)
+  metrics_interval: 60
+  
+  # Performance thresholds
+  response_time_threshold: 10.0  # seconds
+  error_rate_threshold: 0.1      # 10%
+  cost_threshold: 0.5            # USD per request
+
+# Security Configuration
+security:
+  # API key validation
+  validate_api_keys: true
+  
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_minute: 60
+    burst_limit: 10
+  
+  # Content filtering
+  content_filter:
+    enabled: true
+    max_input_length: 10000
+    blocked_keywords: []
+    allowed_domains: []
+
+# Reasoning Configuration
+reasoning:
+  # Enable reasoning capabilities
+  enabled: true
+  
+  # Default reasoning strategy
+  default_strategy: "sequential"  # sequential, parallel, tree_based, reflective, hybrid
+  
+  # Reasoning parameters
+  max_steps: 5
+  verification_enabled: true
+  confidence_threshold: 0.8
+  timeout: 60.0
+  parallel_workers: 3
+  
+  # Provider preferences for reasoning
+  provider_preferences:
+    - "openai"  # o1/o3 models
+    - "claude"  # Extended thinking
+    - "gemini"  # Reasoning models
+
+# Feature Flags
+features:
+  # Enable experimental features
+  experimental_features: false
+  
+  # Enable A/B testing
+  ab_testing: false
+  
+  # Enable cost optimization
+  cost_optimization: true
+  
+  # Enable performance optimization
+  performance_optimization: true
+  
+  # Enable reasoning features
+  reasoning_enabled: true
+
+# Model-specific Configuration
+models:
+  openai:
+    default_model: "gpt-4o"
+    reasoning_models:
+      - "o1-preview"
+      - "o1-mini"
+      - "o3-mini"
+    available_models:
+      - "o1-preview"
+      - "o1-mini"
+      - "o3-mini"
+      - "gpt-4o"
+      - "gpt-4o-mini"
+      - "gpt-4-turbo"
+      - "gpt-4"
+      - "gpt-3.5-turbo"
+    max_tokens: 4096
+    temperature: 0.7
+    reasoning_effort_levels: ["low", "medium", "high", "max"]
+  
+  claude:
+    default_model: "claude-3-5-sonnet-20241022"
+    reasoning_models:
+      - "claude-3-7-sonnet-20241218"
+    available_models:
+      - "claude-3-7-sonnet-20241218"
+      - "claude-3-5-sonnet-20241022"
+      - "claude-3-5-sonnet-20240620"
+      - "claude-3-opus-20240229"
+      - "claude-3-sonnet-20240229"
+      - "claude-3-haiku-20240307"
+    max_tokens: 4096
+    temperature: 0.7
+    extended_thinking_enabled: true
+  
+  gemini:
+    default_model: "gemini-1.5-pro"
+    reasoning_models:
+      - "gemini-2.0-flash-thinking-exp"
+    available_models:
+      - "gemini-2.0-flash-thinking-exp"
+      - "gemini-1.5-pro"
+      - "gemini-1.5-flash"
+      - "gemini-1.0-pro"
+      - "gemini-pro"
+    max_tokens: 4096
+    temperature: 0.7
+    grounding_enabled: true
+    web_search_enabled: true
+
+# Template Configuration
+templates:
+  # Enable custom templates
+  allow_custom_templates: true
+  
+  # Template validation
+  validate_templates: true
+  
+  # Template categories
+  categories:
+    - "summarization"
+    - "qa"
+    - "creative"
+    - "programming"
+    - "analysis"
+    - "general"
+
+# Development Configuration
+development:
+  # Enable debug mode
+  debug: false
+  
+  # Enable verbose logging
+  verbose: false
+  
+  # Mock providers for testing
+  mock_providers: false
+  
+  # Test mode
+  test_mode: false
