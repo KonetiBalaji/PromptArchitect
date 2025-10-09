@@ -1,0 +1,44 @@
+# Visionary Prompt Architect - Kubernetes Namespace
+# Author: Balaji Koneti
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prompt-architect
+  labels:
+    name: prompt-architect
+    app: prompt-architect
+    environment: production
+
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: prompt-architect-quota
+  namespace: prompt-architect
+spec:
+  hard:
+    requests.cpu: "2"
+    requests.memory: 4Gi
+    limits.cpu: "4"
+    limits.memory: 8Gi
+    pods: "10"
+    services: "5"
+    secrets: "10"
+    configmaps: "10"
+
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: prompt-architect-limits
+  namespace: prompt-architect
+spec:
+  limits:
+  - default:
+      cpu: "500m"
+      memory: "1Gi"
+    defaultRequest:
+      cpu: "250m"
+      memory: "512Mi"
+    type: Container
