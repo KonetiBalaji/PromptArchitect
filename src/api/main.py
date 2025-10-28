@@ -21,7 +21,14 @@ from pydantic import BaseModel, Field
 import structlog
 import uvicorn
 
-from ..llm_manager import LLMManager
+import os
+try:
+    from dotenv import load_dotenv  # optional
+    load_dotenv()
+except Exception:
+    pass
+
+from ..llm_manager import LLMManager, LLMManagerConfig, LoadBalancingStrategy
 from ..reasoning_manager import ReasoningManager, ReasoningConfig, ReasoningStrategy
 from ..chain_of_thought.sequential_chain import SequentialChain, SequentialChainConfig
 from ..chain_of_thought.parallel_chain import ParallelChain, ParallelChainConfig
@@ -31,6 +38,7 @@ from ..templates.template_generator import TemplateGenerator, TemplateGeneration
 from ..templates.template_registry import template_registry
 from ..templates.dynamic_selector import DynamicSelector
 from ..llm_providers.base import CompletionRequest, ProviderType
+from ..cache.cache_manager import CacheConfig
 from .auth import AuthManager, User, UserCreate, UserLogin
 from .rate_limiter import RateLimiter
 from .models import (
@@ -63,8 +71,32 @@ async def lifespan(app: FastAPI):
     
     try:
         # Initialize LLM Manager
-        llm_manager = LLMManager()
-        await llm_manager.initialize()
+        # Load API keys from environment
+        api_keys = {
+            ProviderType.OPENAI: os.getenv("OPENAI_API_KEY"),
+            ProviderType.CLAUDE: os.getenv("ANTHROPIC_API_KEY"),
+            ProviderType.GEMINI: os.getenv("GOOGLE_API_KEY"),
+        }
+
+        # Determine default and fallback providers based on available keys
+        available = [ptype for ptype, key in api_keys.items() if key]
+        default_provider = available[0] if available else ProviderType.OPENAI
+        fallback_providers = available[1:] if len(available) > 1 else []
+
+        # Optional cache config
+        cache_url = os.getenv("REDIS_URL")
+        cache_config = CacheConfig(redis_url=cache_url) if cache_url else None
+
+        llm_config = LLMManagerConfig(
+            default_provider=default_provider,
+            fallback_providers=fallback_providers,
+            load_balancing_strategy=LoadBalancingStrategy.PRIORITY,
+            enable_caching=bool(cache_config),
+            cache_config=cache_config,
+        )
+
+        llm_manager = LLMManager(llm_config)
+        await llm_manager.initialize(api_keys)
         
         # Initialize Reasoning Manager
         reasoning_manager = ReasoningManager(llm_manager)
@@ -501,22 +533,38 @@ async def list_templates(
         else:
             templates = template_registry.get_all_templates()
         
-        return [
-            TemplateResponseModel(
-                template_id=template.id,
-                name=template.name,
-                description=template.description,
-                category=template.category,
-                complexity="moderate",  # Default
-                template_content=template.template,
-                variables=template.variables,
-                reasoning_integration=template.reasoning_enabled,
-                created_at=datetime.now(),
-                version="1.0",
-                metadata={}
+        results: List[TemplateResponseModel] = []
+        for template in templates:
+            # Build template content: raw `template` or a concatenation of sectioned fields
+            if getattr(template, "template", None):
+                template_content = template.template
+            else:
+                parts = [
+                    getattr(template, "role_template", "") or "",
+                    getattr(template, "task_template", "") or "",
+                    getattr(template, "context_template", "") or "",
+                    getattr(template, "reasoning_template", "") or "",
+                    getattr(template, "output_format_template", "") or "",
+                    getattr(template, "stop_condition_template", "") or "",
+                ]
+                template_content = "\n\n".join([p for p in parts if p])
+
+            results.append(
+                TemplateResponseModel(
+                    template_id=template.id,
+                    name=template.name,
+                    description=template.description,
+                    category=template.category,
+                    complexity="moderate",
+                    template_content=template_content,
+                    variables=template.variables,
+                    reasoning_integration=False,
+                    created_at=datetime.now(),
+                    version="1.0",
+                    metadata={}
+                )
             )
-            for template in templates
-        ]
+        return results
         
     except Exception as e:
         logger.error("Template listing failed", error=str(e))
@@ -545,9 +593,10 @@ async def get_analytics(
             for provider_type, provider_info in llm_manager.providers.items():
                 provider_status[provider_type.value] = {
                     "status": provider_info.status.value,
-                    "models": len(provider_info.available_models),
-                    "response_time": provider_info.avg_response_time,
-                    "success_rate": provider_info.success_rate
+                    "error_count": provider_info.error_count,
+                    "success_count": provider_info.success_count,
+                    "avg_response_time": provider_info.avg_response_time,
+                    "total_cost": provider_info.total_cost,
                 }
         
         return AnalyticsResponseModel(

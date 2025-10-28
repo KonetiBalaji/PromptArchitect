@@ -10,18 +10,18 @@ import asyncio
 import time
 from typing import Dict, List, Optional, Any, Union
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 import structlog
 
-from .llm_providers.base import (
+from llm_providers.base import (
     BaseLLMProvider, ProviderType, CompletionRequest, CompletionResponse,
     ProviderError, RateLimitError, AuthenticationError, ModelNotFoundError,
     QuotaExceededError
 )
-from .llm_providers.openai_provider import OpenAIProvider
-from .llm_providers.claude_provider import ClaudeProvider
-from .llm_providers.gemini_provider import GeminiProvider
-from .cache.cache_manager import CacheManager, CacheConfig
+from llm_providers.openai_provider import OpenAIProvider
+from llm_providers.claude_provider import ClaudeProvider
+from llm_providers.gemini_provider import GeminiProvider
+from cache.cache_manager import CacheManager, CacheConfig
 
 
 logger = structlog.get_logger(__name__)
@@ -38,6 +38,7 @@ class ProviderStatus(str, Enum):
 
 class ProviderInfo(BaseModel):
     """Information about a provider"""
+    model_config = ConfigDict(arbitrary_types_allowed=True)
     provider: BaseLLMProvider = Field(..., description="Provider instance")
     status: ProviderStatus = Field(default=ProviderStatus.ACTIVE, description="Current status")
     last_used: Optional[float] = Field(default=None, description="Last usage timestamp")

@@ -13,6 +13,10 @@ from .specialized.legal_templates import LEGAL_TEMPLATES
 from .specialized.medical_templates import MEDICAL_TEMPLATES
 from .specialized.financial_templates import FINANCIAL_TEMPLATES
 from .specialized.creative_templates import CREATIVE_TEMPLATES
+try:
+    from .external.chatgpt_prompts import load_chatgpt_prompts
+except Exception:  # pragma: no cover - optional external loader
+    load_chatgpt_prompts = None  # type: ignore
 
 
 class TemplateRegistry:
@@ -71,6 +75,16 @@ class TemplateRegistry:
             self.templates[template_id] = template
             self._add_to_category("creative", template_id)
             self._add_tags(template_id, ["creative", "content", "marketing", "writing"])
+
+        # External community prompts (optional)
+        if load_chatgpt_prompts:
+            for tpl in load_chatgpt_prompts():
+                # Avoid collisions
+                if tpl.id in self.templates:
+                    continue
+                self.templates[tpl.id] = tpl
+                self._add_to_category(tpl.category, tpl.id)
+                self._add_tags(tpl.id, list(set((tpl.tags or []) + ["community"])) )
     
     def _add_to_category(self, category: str, template_id: str):
         """Add template to category"""
@@ -154,10 +168,25 @@ class TemplateRegistry:
         matching_templates = []
         
         for template in self.templates.values():
-            # Search in name, description, and template content
+            # Search in name, description, and template content (raw or sectioned)
+            content_blob = ""
+            # Prefer raw template if present
+            if getattr(template, "template", None):
+                content_blob = getattr(template, "template", "") or ""
+            else:
+                # Concatenate sectioned fields defensively
+                parts = [
+                    getattr(template, "role_template", "") or "",
+                    getattr(template, "task_template", "") or "",
+                    getattr(template, "context_template", "") or "",
+                    getattr(template, "reasoning_template", "") or "",
+                    getattr(template, "output_format_template", "") or "",
+                    getattr(template, "stop_condition_template", "") or "",
+                ]
+                content_blob = "\n".join(parts)
             if (query_lower in template.name.lower() or
                 query_lower in template.description.lower() or
-                query_lower in template.template.lower()):
+                query_lower in content_blob.lower()):
                 matching_templates.append(template)
         
         return matching_templates

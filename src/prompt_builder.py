@@ -14,25 +14,33 @@ from enum import Enum
 from pydantic import BaseModel, Field
 import structlog
 
-from .llm_manager import LLMManager, LLMManagerConfig
-from .llm_providers.base import CompletionRequest, CompletionResponse, ProviderType
-from .cache.cache_manager import CacheManager, CacheConfig
+from llm_manager import LLMManager, LLMManagerConfig
+from llm_providers.base import CompletionRequest, CompletionResponse, ProviderType
+from cache.cache_manager import CacheManager, CacheConfig
 
 
 logger = structlog.get_logger(__name__)
 
 
 class PromptTemplate(BaseModel):
-    """Template for structured prompts"""
+    """Template for structured prompts
+
+    Supports two shapes:
+    - Sectioned templates (role/task/context/reasoning/output/stop)
+    - Raw templates via `template` (single monolithic prompt)
+    """
     id: str = Field(..., description="Unique template identifier")
     name: str = Field(..., description="Human-readable template name")
     description: str = Field(..., description="Template description")
-    role_template: str = Field(..., description="Role definition template")
-    task_template: str = Field(..., description="Task description template")
-    context_template: str = Field(..., description="Context template")
-    reasoning_template: str = Field(..., description="Reasoning/strategy template")
-    output_format_template: str = Field(..., description="Output format template")
-    stop_condition_template: str = Field(..., description="Stop condition template")
+    # Sectioned shape
+    role_template: Optional[str] = Field(default=None, description="Role definition template")
+    task_template: Optional[str] = Field(default=None, description="Task description template")
+    context_template: Optional[str] = Field(default=None, description="Context template")
+    reasoning_template: Optional[str] = Field(default=None, description="Reasoning/strategy template")
+    output_format_template: Optional[str] = Field(default=None, description="Output format template")
+    stop_condition_template: Optional[str] = Field(default=None, description="Stop condition template")
+    # Raw monolithic shape
+    template: Optional[str] = Field(default=None, description="Raw monolithic template content with {variables}")
     variables: List[str] = Field(default_factory=list, description="Required template variables")
     category: str = Field(default="general", description="Template category")
     tags: List[str] = Field(default_factory=list, description="Template tags")
@@ -200,11 +208,22 @@ class PromptBuilder:
         # Select template
         template = await self._select_template(request)
         
-        # Generate prompt components
-        prompt_components = await self._generate_components(request, template)
-        
-        # Build full prompt
-        full_prompt = self._build_full_prompt(prompt_components, request.user_input)
+        # If raw template is provided, use it directly
+        if template.template:
+            filled = self._fill_template(template.template, request.variables)
+            prompt_components = {
+                "role": request.role or "assistant",
+                "task": request.task or "",
+                "context": request.context or "",
+                "reasoning": request.reasoning or "",
+                "output_format": request.output_format or "",
+                "stop_condition": request.stop_condition or ""
+            }
+            full_prompt = filled
+        else:
+            # Generate prompt components and assemble sectioned prompt
+            prompt_components = await self._generate_components(request, template)
+            full_prompt = self._build_full_prompt(prompt_components, request.user_input)
         
         # Create generated prompt
         generated_prompt = GeneratedPrompt(
@@ -299,22 +318,22 @@ class PromptBuilder:
         
         # Use provided values or generate from templates
         components["role"] = request.role or self._fill_template(
-            template.role_template, request.variables
+            template.role_template or "assistant", request.variables
         )
         components["task"] = request.task or self._fill_template(
-            template.task_template, request.variables
+            template.task_template or "", request.variables
         )
         components["context"] = request.context or self._fill_template(
-            template.context_template, request.variables
+            template.context_template or "", request.variables
         )
         components["reasoning"] = request.reasoning or self._fill_template(
-            template.reasoning_template, request.variables
+            template.reasoning_template or "", request.variables
         )
         components["output_format"] = request.output_format or self._fill_template(
-            template.output_format_template, request.variables
+            template.output_format_template or "", request.variables
         )
         components["stop_condition"] = request.stop_condition or self._fill_template(
-            template.stop_condition_template, request.variables
+            template.stop_condition_template or "", request.variables
         )
         
         return components

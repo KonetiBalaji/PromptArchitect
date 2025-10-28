@@ -302,6 +302,27 @@ Authorization: Bearer <token>
 
 ## Usage Examples
 
+### Importing Community Prompts
+
+You can import external prompt templates (e.g., from community repositories) as raw templates.
+
+1) Create a JSON catalog at `data/chatgpt_prompts.json` with entries like:
+
+```json
+[
+  {
+    "id": "python_interpreter",
+    "name": "Python Interpreter",
+    "description": "Act as a Python interpreter.",
+    "template": "I want you to act as a Python interpreter..."
+  }
+]
+```
+
+2) On startup, the registry will load these prompts into the `community` category automatically.
+
+Source reference: `https://github.com/pacholoamit/chatgpt-prompts.git`.
+
 ### Basic Completion
 
 ```python

@@ -16,7 +16,7 @@ import redis.asyncio as redis
 from pydantic import BaseModel, Field
 import structlog
 
-from ..llm_providers.base import CompletionRequest, CompletionResponse, ProviderType
+from llm_providers.base import CompletionRequest, CompletionResponse, ProviderType
 
 
 logger = structlog.get_logger(__name__)
